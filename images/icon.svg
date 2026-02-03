@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#1D4ED8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="128" height="128" rx="16" fill="url(#bg)"/>
+
+  <!-- JSON brackets representing lines -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Line 1 -->
+    <path d="M28 32 C22 32, 20 36, 20 40 C20 44, 22 48, 28 48"/>
+    <path d="M52 32 C58 32, 60 36, 60 40 C60 44, 58 48, 52 48"/>
+    <line x1="68" y1="40" x2="108" y2="40" stroke-opacity="0.6"/>
+
+    <!-- Line 2 -->
+    <path d="M28 56 C22 56, 20 60, 20 64 C20 68, 22 72, 28 72"/>
+    <path d="M52 56 C58 56, 60 60, 60 64 C60 68, 58 72, 52 72"/>
+    <line x1="68" y1="64" x2="96" y2="64" stroke-opacity="0.6"/>
+
+    <!-- Line 3 -->
+    <path d="M28 80 C22 80, 20 84, 20 88 C20 92, 22 96, 28 96"/>
+    <path d="M52 80 C58 80, 60 84, 60 88 C60 92, 58 96, 52 96"/>
+    <line x1="68" y1="88" x2="100" y2="88" stroke-opacity="0.6"/>
+  </g>
+
+  <!-- Dots inside brackets -->
+  <g fill="#FFFFFF">
+    <circle cx="40" cy="40" r="3"/>
+    <circle cx="40" cy="64" r="3"/>
+    <circle cx="40" cy="88" r="3"/>
+  </g>
+</svg>
