@@ -1,6 +1,6 @@
 {
   "name": "vscode-jsonl-viewer",
-  "displayName": "JSONL Viewer",
+  "displayName": "JSONL Query Viewer",
   "description": "View and query JSONL/NDJSON files as interactive tables with SQL-like filtering",
   "version": "0.0.1",
   "license": "MIT",
@@ -30,7 +30,7 @@
     "customEditors": [
       {
         "viewType": "jsonlViewer.editor",
-        "displayName": "JSONL Viewer",
+        "displayName": "JSONL Query Viewer",
         "selector": [
           {
             "filenamePattern": "*.jsonl"
