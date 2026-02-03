@@ -109,6 +109,47 @@ npx vsce package
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+### Commit Message Convention
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for automated releases.
+
+```
+<type>: <description>
+
+[optional body]
+```
+
+**Types:**
+- `feat:` - New feature (triggers minor version bump)
+- `fix:` - Bug fix (triggers patch version bump)
+- `docs:` - Documentation changes
+- `chore:` - Maintenance tasks
+- `refactor:` - Code refactoring
+- `test:` - Adding or updating tests
+
+**Breaking Changes:**
+Add `!` after the type or include `BREAKING CHANGE:` in the body to trigger a major version bump.
+
+```bash
+feat!: remove deprecated API
+# or
+feat: new API
+
+BREAKING CHANGE: old API has been removed
+```
+
+### Release Process
+
+Releases are automated using [release-please](https://github.com/googleapis/release-please).
+
+1. Merge PRs with conventional commit messages to `master`
+2. release-please automatically creates/updates a Release PR
+3. When the Release PR is merged:
+   - A new GitHub release is created
+   - The version in `package.json` is updated
+   - `CHANGELOG.md` is generated
+   - The extension is automatically published to VS Code Marketplace
+
 ## License
 
 MIT

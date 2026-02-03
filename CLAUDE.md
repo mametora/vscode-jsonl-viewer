@@ -117,6 +117,47 @@ SELECT * FROM data LIMIT 100
 SELECT * FROM data LIMIT 100 OFFSET 50
 ```
 
+## Commit Message Convention
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for automated releases via release-please.
+
+**Format:**
+
+```
+<type>: <description>
+```
+
+**Types:**
+
+- `feat:` - New feature (minor version bump)
+- `fix:` - Bug fix (patch version bump)
+- `docs:` - Documentation changes
+- `chore:` - Maintenance tasks
+- `refactor:` - Code refactoring
+- `test:` - Adding or updating tests
+
+**Breaking Changes:**
+
+```bash
+feat!: remove deprecated API
+```
+
+## Release Process
+
+Releases are automated using [release-please](https://github.com/googleapis/release-please).
+
+1. Merge PRs with conventional commit messages to `master`
+2. release-please creates/updates a Release PR automatically
+3. Merging the Release PR triggers:
+   - GitHub release creation
+   - `package.json` version update
+   - `CHANGELOG.md` generation
+   - Automatic publish to VS Code Marketplace
+
+**Required GitHub Secrets:**
+
+- `VSCE_PAT`: VS Code Marketplace Personal Access Token
+
 ## Notes
 
 - Table name in `FROM` clause is ignored (always targets current file)
