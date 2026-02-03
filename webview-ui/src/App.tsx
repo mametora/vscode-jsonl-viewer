@@ -43,6 +43,7 @@ function App() {
         onClear={clearQuery}
         error={queryError}
         hasQuery={isFiltered}
+        columns={data.columns}
       />
       <div className="table-section">
         <DataTable
