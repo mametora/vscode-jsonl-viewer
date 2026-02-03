@@ -1,4 +1,4 @@
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState, useCallback, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { JsonlRow } from "../hooks/useVscodeApi";
 
@@ -8,8 +8,24 @@ interface DataTableProps {
   onLineClick: (line: number) => void;
 }
 
+const MIN_COLUMN_WIDTH = 50;
+const DEFAULT_COLUMN_WIDTH = 150;
+const MAX_AUTO_FIT_WIDTH = 500;
+
+interface TooltipState {
+  text: string;
+  x: number;
+  y: number;
+}
+
 export function DataTable({ rows, columns, onLineClick }: DataTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+  const [resizingColumn, setResizingColumn] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+  const resizeStartX = useRef<number>(0);
+  const resizeStartWidth = useRef<number>(0);
+  const tooltipTimeoutRef = useRef<number | null>(null);
 
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
@@ -20,11 +36,150 @@ export function DataTable({ rows, columns, onLineClick }: DataTableProps) {
 
   const allColumns = useMemo(() => ["_lineNumber", ...columns], [columns]);
 
+  // Reset column widths when columns change
+  useEffect(() => {
+    setColumnWidths({});
+  }, [columns]);
+
+  const getColumnWidth = useCallback(
+    (col: string): number => {
+      if (col === "_lineNumber") return 60;
+      return columnWidths[col] ?? DEFAULT_COLUMN_WIDTH;
+    },
+    [columnWidths]
+  );
+
   const gridTemplateColumns = useMemo(() => {
-    return allColumns
-      .map((col) => (col === "_lineNumber" ? "60px" : "minmax(100px, 1fr)"))
-      .join(" ");
-  }, [allColumns]);
+    return allColumns.map((col) => `${getColumnWidth(col)}px`).join(" ");
+  }, [allColumns, getColumnWidth]);
+
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent, col: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setResizingColumn(col);
+      resizeStartX.current = e.clientX;
+      resizeStartWidth.current = getColumnWidth(col);
+    },
+    [getColumnWidth]
+  );
+
+  const handleResizeMove = useCallback(
+    (e: MouseEvent) => {
+      if (!resizingColumn) return;
+      const diff = e.clientX - resizeStartX.current;
+      const newWidth = Math.max(MIN_COLUMN_WIDTH, resizeStartWidth.current + diff);
+      setColumnWidths((prev) => ({ ...prev, [resizingColumn]: newWidth }));
+    },
+    [resizingColumn]
+  );
+
+  const handleResizeEnd = useCallback(() => {
+    setResizingColumn(null);
+  }, []);
+
+  // Global mouse event listeners for resize
+  useEffect(() => {
+    if (resizingColumn) {
+      document.addEventListener("mousemove", handleResizeMove);
+      document.addEventListener("mouseup", handleResizeEnd);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+      return () => {
+        document.removeEventListener("mousemove", handleResizeMove);
+        document.removeEventListener("mouseup", handleResizeEnd);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      };
+    }
+  }, [resizingColumn, handleResizeMove, handleResizeEnd]);
+
+  // Calculate optimal column width based on content
+  const calculateOptimalWidth = useCallback(
+    (col: string): number => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return DEFAULT_COLUMN_WIDTH;
+
+      // Get computed font style
+      const style = getComputedStyle(document.body);
+      const fontFamily = style.getPropertyValue("--vscode-editor-font-family") || "monospace";
+      const fontSize = style.getPropertyValue("--vscode-editor-font-size") || "13px";
+      ctx.font = `${fontSize} ${fontFamily}`;
+
+      // Measure header text
+      let maxWidth = ctx.measureText(col).width;
+
+      // Sample rows to measure content (limit to first 100 rows for performance)
+      const sampleSize = Math.min(rows.length, 100);
+      for (let i = 0; i < sampleSize; i++) {
+        const value = rows[i][col];
+        let text = "";
+        if (value === null) {
+          text = "null";
+        } else if (value !== undefined) {
+          text = typeof value === "object" ? JSON.stringify(value) : String(value);
+        }
+        const textWidth = ctx.measureText(text).width;
+        maxWidth = Math.max(maxWidth, textWidth);
+      }
+
+      // Add padding (12px on each side)
+      const paddedWidth = maxWidth + 24;
+      return Math.min(Math.max(paddedWidth, MIN_COLUMN_WIDTH), MAX_AUTO_FIT_WIDTH);
+    },
+    [rows]
+  );
+
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent, col: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const optimalWidth = calculateOptimalWidth(col);
+      setColumnWidths((prev) => ({ ...prev, [col]: optimalWidth }));
+    },
+    [calculateOptimalWidth]
+  );
+
+  const handleCellMouseEnter = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>, text: string) => {
+      const target = e.currentTarget;
+      // Check if text is overflowing
+      if (target.scrollWidth > target.clientWidth) {
+        // Clear any existing timeout
+        if (tooltipTimeoutRef.current) {
+          window.clearTimeout(tooltipTimeoutRef.current);
+        }
+        // Delay tooltip display slightly
+        tooltipTimeoutRef.current = window.setTimeout(() => {
+          const rect = target.getBoundingClientRect();
+          setTooltip({
+            text,
+            x: rect.left,
+            y: rect.bottom + 4,
+          });
+        }, 300);
+      }
+    },
+    []
+  );
+
+  const handleCellMouseLeave = useCallback(() => {
+    if (tooltipTimeoutRef.current) {
+      window.clearTimeout(tooltipTimeoutRef.current);
+      tooltipTimeoutRef.current = null;
+    }
+    setTooltip(null);
+  }, []);
+
+  // Cleanup tooltip timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (tooltipTimeoutRef.current) {
+        window.clearTimeout(tooltipTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const formatValue = (value: unknown): { text: string; className: string } => {
     if (value === undefined) {
@@ -68,7 +223,14 @@ export function DataTable({ rows, columns, onLineClick }: DataTableProps) {
               key={col}
               className={`table-cell header-cell ${col === "_lineNumber" ? "line-number-cell" : ""}`}
             >
-              {col === "_lineNumber" ? "#" : col}
+              <span className="header-text">{col === "_lineNumber" ? "#" : col}</span>
+              {col !== "_lineNumber" && (
+                <div
+                  className={`resize-handle ${resizingColumn === col ? "resizing" : ""}`}
+                  onMouseDown={(e) => handleResizeStart(e, col)}
+                  onDoubleClick={(e) => handleDoubleClick(e, col)}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -130,7 +292,12 @@ export function DataTable({ rows, columns, onLineClick }: DataTableProps) {
 
                   const { text, className } = formatValue(row[col]);
                   return (
-                    <div key={col} className={`table-cell ${className}`} title={text}>
+                    <div
+                      key={col}
+                      className={`table-cell ${className}`}
+                      onMouseEnter={(e) => handleCellMouseEnter(e, text)}
+                      onMouseLeave={handleCellMouseLeave}
+                    >
                       {text}
                     </div>
                   );
@@ -140,6 +307,17 @@ export function DataTable({ rows, columns, onLineClick }: DataTableProps) {
           })}
         </div>
       </div>
+      {tooltip && (
+        <div
+          className="cell-tooltip"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y,
+          }}
+        >
+          {tooltip.text}
+        </div>
+      )}
     </div>
   );
 }
