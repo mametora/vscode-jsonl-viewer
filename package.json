@@ -3,6 +3,7 @@
   "displayName": "JSONL Viewer",
   "description": "View and query JSONL/NDJSON files as interactive tables with SQL-like filtering",
   "version": "0.0.1",
+  "license": "MIT",
   "publisher": "mametora",
   "engines": {
     "vscode": "^1.85.0"
