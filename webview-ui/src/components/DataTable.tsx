@@ -12,12 +12,20 @@ const MIN_COLUMN_WIDTH = 50;
 const DEFAULT_COLUMN_WIDTH = 150;
 const MAX_AUTO_FIT_WIDTH = 500;
 
+interface TooltipState {
+  text: string;
+  x: number;
+  y: number;
+}
+
 export function DataTable({ rows, columns, onLineClick }: DataTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const resizeStartX = useRef<number>(0);
   const resizeStartWidth = useRef<number>(0);
+  const tooltipTimeoutRef = useRef<number | null>(null);
 
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
@@ -133,6 +141,46 @@ export function DataTable({ rows, columns, onLineClick }: DataTableProps) {
     [calculateOptimalWidth]
   );
 
+  const handleCellMouseEnter = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>, text: string) => {
+      const target = e.currentTarget;
+      // Check if text is overflowing
+      if (target.scrollWidth > target.clientWidth) {
+        // Clear any existing timeout
+        if (tooltipTimeoutRef.current) {
+          window.clearTimeout(tooltipTimeoutRef.current);
+        }
+        // Delay tooltip display slightly
+        tooltipTimeoutRef.current = window.setTimeout(() => {
+          const rect = target.getBoundingClientRect();
+          setTooltip({
+            text,
+            x: rect.left,
+            y: rect.bottom + 4,
+          });
+        }, 300);
+      }
+    },
+    []
+  );
+
+  const handleCellMouseLeave = useCallback(() => {
+    if (tooltipTimeoutRef.current) {
+      window.clearTimeout(tooltipTimeoutRef.current);
+      tooltipTimeoutRef.current = null;
+    }
+    setTooltip(null);
+  }, []);
+
+  // Cleanup tooltip timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (tooltipTimeoutRef.current) {
+        window.clearTimeout(tooltipTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const formatValue = (value: unknown): { text: string; className: string } => {
     if (value === undefined) {
       return { text: "", className: "" };
@@ -244,7 +292,12 @@ export function DataTable({ rows, columns, onLineClick }: DataTableProps) {
 
                   const { text, className } = formatValue(row[col]);
                   return (
-                    <div key={col} className={`table-cell ${className}`} title={text}>
+                    <div
+                      key={col}
+                      className={`table-cell ${className}`}
+                      onMouseEnter={(e) => handleCellMouseEnter(e, text)}
+                      onMouseLeave={handleCellMouseLeave}
+                    >
                       {text}
                     </div>
                   );
@@ -254,6 +307,17 @@ export function DataTable({ rows, columns, onLineClick }: DataTableProps) {
           })}
         </div>
       </div>
+      {tooltip && (
+        <div
+          className="cell-tooltip"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y,
+          }}
+        >
+          {tooltip.text}
+        </div>
+      )}
     </div>
   );
 }

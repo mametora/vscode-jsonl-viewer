@@ -397,3 +397,22 @@ body {
   font-size: 12px;
   color: var(--vscode-editorWarning-foreground);
 }
+
+.cell-tooltip {
+  position: fixed;
+  max-width: 500px;
+  max-height: 300px;
+  padding: 6px 10px;
+  background-color: var(--vscode-editorHoverWidget-background);
+  border: 1px solid var(--vscode-editorHoverWidget-border);
+  border-radius: 3px;
+  box-shadow: 0 2px 8px var(--vscode-widget-shadow);
+  font-size: var(--vscode-editor-font-size);
+  font-family: var(--vscode-editor-font-family);
+  color: var(--vscode-editorHoverWidget-foreground);
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow: auto;
+  z-index: 1000;
+  pointer-events: none;
+}
