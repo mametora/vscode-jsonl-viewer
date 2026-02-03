@@ -9,6 +9,8 @@ VSCode extension to view JSONL/NDJSON files as interactive tables with SQL-like 
 
 - 📊 **Table View**: Display JSONL files as formatted tables
 - 🔍 **SQL Queries**: Filter and sort data using SQL-like syntax
+- ✨ **SQL Editor**: Syntax highlighting and autocomplete with CodeMirror
+- 📜 **Query History**: Access previous queries with keyboard navigation
 - ⚡ **Virtual Scrolling**: Handle large files (10,000+ rows) smoothly
 - 🎨 **VSCode Theme**: Seamlessly integrates with your VSCode theme
 - 🔗 **Line Navigation**: Click line numbers to jump to source
@@ -70,7 +72,7 @@ SELECT name, email, status FROM data
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/vscode-jsonl-viewer.git
+git clone https://github.com/mametora/vscode-jsonl-viewer.git
 cd vscode-jsonl-viewer
 
 # Install dependencies

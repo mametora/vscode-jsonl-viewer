@@ -10,10 +10,16 @@ vscode-jsonl-viewer/
 │   ├── extension.ts              # Entry point
 │   ├── jsonlEditorProvider.ts    # Custom Editor Provider
 │   ├── jsonlDocument.ts          # JSONL parsing
-│   └── queryEngine/
-│       ├── index.ts
-│       ├── parser.ts             # SQL parsing (node-sql-parser)
-│       └── executor.ts           # Query execution
+│   ├── queryEngine/
+│   │   ├── index.ts
+│   │   ├── parser.ts             # SQL parsing (node-sql-parser)
+│   │   ├── executor.ts           # Query execution
+│   │   └── types.ts              # Type definitions
+│   └── __tests__/                # Unit tests
+│       ├── jsonlDocument.test.ts
+│       └── queryEngine/
+│           ├── parser.test.ts
+│           └── executor.test.ts
 ├── webview-ui/                   # Webview (React + Vite)
 │   ├── src/
 │   │   ├── App.tsx
@@ -21,15 +27,22 @@ vscode-jsonl-viewer/
 │   │   ├── index.css
 │   │   ├── components/
 │   │   │   ├── DataTable.tsx     # Virtual scroll table
-│   │   │   ├── QueryInput.tsx    # Query input
+│   │   │   ├── QueryInput.tsx    # Query input container
+│   │   │   ├── QueryEditor.tsx   # CodeMirror SQL editor
+│   │   │   ├── QueryHistory.tsx  # Query history dropdown
 │   │   │   └── StatusBar.tsx
-│   │   └── hooks/
-│   │       └── useVscodeApi.ts   # VSCode API communication
+│   │   ├── hooks/
+│   │   │   ├── useVscodeApi.ts   # VSCode API communication
+│   │   │   └── useQueryHistory.ts # Query history management
+│   │   └── utils/
+│   │       ├── codemirrorTheme.ts # CodeMirror theme
+│   │       └── sqlCompletions.ts  # SQL autocomplete
 │   ├── package.json
 │   └── vite.config.ts
 ├── test-data/                    # Test data
 ├── package.json
 ├── tsconfig.json
+├── vitest.config.ts              # Test configuration
 └── esbuild.js
 ```
 
@@ -52,6 +65,18 @@ npm run build:webview
 # Watch mode for extension
 npm run watch
 
+# Dev mode for webview (with hot reload)
+npm run dev:webview
+
+# Run tests
+npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+
 # Generate test data (10,000 rows)
 node scripts/generate-test-data.js 10000
 ```
@@ -63,8 +88,8 @@ node scripts/generate-test-data.js 10000
 
 ## Tech Stack
 
-- **Extension**: TypeScript, esbuild, node-sql-parser
-- **Webview**: React, Vite, @tanstack/react-virtual
+- **Extension**: TypeScript, esbuild, node-sql-parser, Vitest
+- **Webview**: React, Vite, @tanstack/react-virtual, CodeMirror
 
 ## VSCode-Webview Communication
 
