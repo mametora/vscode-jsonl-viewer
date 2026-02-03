@@ -1,5 +1,6 @@
 import type { JsonlRow } from "../jsonlDocument";
 import type { ParsedQuery } from "./parser";
+import type { WhereExpr } from "./types";
 
 export interface QueryResult {
   rows: JsonlRow[];
@@ -50,9 +51,15 @@ export function executeQuery(
 }
 
 function compareValues(a: unknown, b: unknown): number {
-  if (a === b) return 0;
-  if (a === null || a === undefined) return -1;
-  if (b === null || b === undefined) return 1;
+  if (a === b) {
+    return 0;
+  }
+  if (a === null || a === undefined) {
+    return -1;
+  }
+  if (b === null || b === undefined) {
+    return 1;
+  }
 
   if (typeof a === "number" && typeof b === "number") {
     return a - b;
@@ -61,11 +68,34 @@ function compareValues(a: unknown, b: unknown): number {
   return String(a).localeCompare(String(b));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type WhereExpr = any;
+/**
+ * Loose equality comparison for SQL = operator.
+ * Handles type coercion between strings and numbers.
+ */
+function looseEquals(a: unknown, b: unknown): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a === null || a === undefined || b === null || b === undefined) {
+    return false;
+  }
+  if (typeof a === typeof b) {
+    return a === b;
+  }
+  // Coerce string <-> number comparison
+  if (typeof a === "number" && typeof b === "string") {
+    return a === Number(b);
+  }
+  if (typeof a === "string" && typeof b === "number") {
+    return Number(a) === b;
+  }
+  return String(a) === String(b);
+}
 
-function evaluateWhere(row: JsonlRow, where: WhereExpr): boolean {
-  if (!where) return true;
+function evaluateWhere(row: JsonlRow, where: WhereExpr | null): boolean {
+  if (!where) {
+    return true;
+  }
 
   switch (where.type) {
     case "binary_expr": {
@@ -74,10 +104,10 @@ function evaluateWhere(row: JsonlRow, where: WhereExpr): boolean {
 
       switch (where.operator) {
         case "=":
-          return left == right;
+          return looseEquals(left, right);
         case "!=":
         case "<>":
-          return left != right;
+          return !looseEquals(left, right);
         case ">":
           return compareValues(left, right) > 0;
         case ">=":
@@ -126,7 +156,9 @@ function evaluateWhere(row: JsonlRow, where: WhereExpr): boolean {
 }
 
 function evaluateExpr(row: JsonlRow, expr: WhereExpr): unknown {
-  if (!expr) return null;
+  if (!expr) {
+    return null;
+  }
 
   switch (expr.type) {
     case "column_ref": {

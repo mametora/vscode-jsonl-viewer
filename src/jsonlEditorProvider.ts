@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { parseJsonl, JsonlData, JsonlRow } from "./jsonlDocument";
+import { parseJsonl, JsonlData } from "./jsonlDocument";
 import { parseQuery, executeQuery } from "./queryEngine";
 
 export class JsonlEditorProvider implements vscode.CustomTextEditorProvider {
@@ -23,8 +23,7 @@ export class JsonlEditorProvider implements vscode.CustomTextEditorProvider {
 
   public async resolveCustomTextEditor(
     document: vscode.TextDocument,
-    webviewPanel: vscode.WebviewPanel,
-    _token: vscode.CancellationToken
+    webviewPanel: vscode.WebviewPanel
   ): Promise<void> {
     webviewPanel.webview.options = {
       enableScripts: true,
@@ -86,7 +85,7 @@ export class JsonlEditorProvider implements vscode.CustomTextEditorProvider {
           }
           break;
 
-        case "goToLine":
+        case "goToLine": {
           const lineNumber = message.line as number;
           const position = new vscode.Position(lineNumber - 1, 0);
           vscode.window.showTextDocument(document, {
@@ -94,6 +93,7 @@ export class JsonlEditorProvider implements vscode.CustomTextEditorProvider {
             viewColumn: vscode.ViewColumn.Beside,
           });
           break;
+        }
       }
     });
   }

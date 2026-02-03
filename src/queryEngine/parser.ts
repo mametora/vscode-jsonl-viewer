@@ -1,8 +1,9 @@
 import { Parser } from "node-sql-parser";
+import type { WhereExpr } from "./types";
 
 export interface ParsedQuery {
   columns: string[] | "*";
-  where: unknown;
+  where: WhereExpr | null;
   orderBy: { column: string; direction: "ASC" | "DESC" }[] | null;
   limit: number | null;
   offset: number | null;
@@ -24,8 +25,12 @@ export function parseQuery(sql: string): ParsedQuery {
     throw new Error("Only SELECT statements are supported");
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const selectAst = ast as any;
+  const selectAst = ast as {
+    columns: Array<{ expr: { type: string; column: string } }> | "*";
+    where: WhereExpr | null;
+    orderby: Array<{ expr: { type: string; column: string }; type?: string }> | null;
+    limit: { value: Array<{ value: number }> } | null;
+  };
 
   // Parse columns
   let columns: string[] | "*" = "*";

@@ -19,7 +19,9 @@ export function parseJsonl(content: string): JsonlData {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (!line) continue;
+    if (!line) {
+      continue;
+    }
 
     const lineNumber = i + 1;
     try {
@@ -71,7 +73,9 @@ export function detectColumnTypes(
   for (const row of rows) {
     for (const col of columns) {
       const value = row[col];
-      if (value === undefined || value === null) continue;
+      if (value === undefined || value === null) {
+        continue;
+      }
 
       const type = typeof value;
       if (type === "object") {
