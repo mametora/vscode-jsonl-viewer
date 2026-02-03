@@ -2,7 +2,7 @@
   "name": "vscode-jsonl-viewer",
   "displayName": "JSONL Query Viewer",
   "description": "View and query JSONL/NDJSON files as interactive tables with SQL-like filtering",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "license": "MIT",
   "publisher": "mametora",
   "icon": "images/icon.png",
