@@ -5,3 +5,4 @@ dist/
 webview-ui/node_modules/
 webview-ui/dist/
 test-data/
+coverage/

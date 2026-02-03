@@ -45,16 +45,21 @@
     "watch": "node esbuild.js --watch",
     "dev:webview": "cd webview-ui && npm run dev",
     "lint": "eslint src --ext ts",
-    "pretest": "npm run build && npm run lint"
+    "pretest": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "esbuild": "^0.19.8",
     "eslint": "^8.54.0",
-    "typescript": "^5.3.2"
+    "typescript": "^5.3.2",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "node-sql-parser": "^5.3.6"
